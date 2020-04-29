@@ -19,7 +19,7 @@ latPos = np.where(lat_array_temp == lat)
 lonPos = np.where(lon_array_temp == lon)
 
 
-grid=np.zeros((4,4))
+grid=np.zeros((180,360))
 
 if conc > 15:
     icePresent = True
