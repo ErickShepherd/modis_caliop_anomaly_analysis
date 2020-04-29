@@ -1,9 +1,9 @@
 import numpy as np
 
 
-nlat, nlong = (361, 180)
-lat = np.linspace(0, 360, nlat)
-long = np.linspace(-90, 90, nlong)
+nlat, nlong = (181, 361)
+lat = np.linspace(-90, 90, nlat)
+long = np.linspace(0, 360, nlong)
 latv, longv = np.meshgrid(lat, long)
 #print(latv)
 #print(longv)
