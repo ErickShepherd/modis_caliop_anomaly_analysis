@@ -26,6 +26,12 @@ if conc > 15:
 else:
     icePresent = False
 
-# want to append the concentration to a list at the index of the grid below:
-grid[latPos[0][0] - 1][lonPos[0][0] - 1].append(???)
+if grid[latPos[0][0] - 1][lonPos[0][0] - 1] == 0:
+    count = 1
+else:
+    icePresent += grid[latPos[0][0] - 1][lonPos[0][0] - 1][0]
+    count += grid[latPos[0][0] - 1][lonPos[0][0] - 1][1]
+
+grid[latPos[0][0] - 1][lonPos[0][0] - 1] == (icePresent, count) 
+
 print(grid)
