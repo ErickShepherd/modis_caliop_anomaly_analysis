@@ -32,6 +32,6 @@ else:
     icePresent += grid[latPos[0][0] - 1][lonPos[0][0] - 1][0]
     count += grid[latPos[0][0] - 1][lonPos[0][0] - 1][1]
 
-grid[latPos[0][0] - 1][lonPos[0][0] - 1] == (icePresent, count) 
+grid[latPos[0][0] - 1][lonPos[0][0] - 1] = [icePresent, count] 
 
 print(grid)
