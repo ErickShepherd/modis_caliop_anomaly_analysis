@@ -100,8 +100,8 @@ if __name__ == "__main__":
         else:
             icePresent = False
             
-        grid[latPos[0][0] - 1][lonPos[0][0] - 1][0] = icePresent
-        grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] = count
+        grid[latPos[0][0] - 1][lonPos[0][0] - 1][0] += icePresent
+        grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] += 1
     
     concProb = np.zeros((180,360))
 
