@@ -35,7 +35,7 @@ if grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] == 0:
     grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] = count
     
 else:
-    icePresent += grid[latPos[0][0] - 1][lonPos[0][0] - 1][0]
-    count += grid[latPos[0][0] - 1][lonPos[0][0] - 1][1]
+    grid[latPos[0][0] - 1][lonPos[0][0] - 1][0] += icePresent
+    grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] += 1
 
 print(grid)
