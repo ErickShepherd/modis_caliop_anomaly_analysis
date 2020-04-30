@@ -44,7 +44,7 @@ concProb = np.zeros((4,4))
 
 for i in range(len(grid)):
     for j in range(len(grid[i])):
-        concProb[i][j] = grid[i][j][0]/grid[i][j][1]
+        concProb[j][i] = grid[i][j][0]/grid[i][j][1]
 lat = np.arange(0, 5)
 long = np.arange(0,5)
 latv, longv = np.meshgrid(lat, long)
