@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 latArray = np.arange(-90,91)
 lonArray = np.arange(0,360)
@@ -45,6 +45,17 @@ concProb = np.zeros((4,4))
 for i in range(len(grid)):
     for j in range(len(grid[i])):
         concProb[i][j] = grid[i][j][0]/grid[i][j][1]
-            
+lat = np.arange(0, 5)
+long = np.arange(0,5)
+latv, longv = np.meshgrid(lat, long)
+
+cmap = plt.get_cmap('PiYG')
+fig, ax = plt.subplots()
+
+im = ax.pcolormesh(longv, latv, concProb, cmap=cmap)
+
+fig.colorbar(im, ax = ax)
+plt.show()
+ 
 print(grid)
 print(concProb)
