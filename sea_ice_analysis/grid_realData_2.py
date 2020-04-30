@@ -100,14 +100,7 @@ if __name__ == "__main__":
             # uses lat and long values to find where on the 1x1 grid they find, returns index of grid
             latPos, lonPos = findGridPosition(NHlat[i][j], NHlon[i][j])
             
-            # data point is considered to have 100% probability of ice being there if concentration >= 15%
-            if NHconc[i][j] >= 15:
-                icePresent = True
-            else:
-                icePresent = False                
-
-            # add to sum of probablities of ice being present in the data grid
-            grid[latPos][lonPos][0] += icePresent
+            grid[latPos][lonPos][0] += NHconc[i][j]
 
             # add one to the number of points inside the grid
             grid[latPos][lonPos][1] += 1
@@ -119,12 +112,7 @@ if __name__ == "__main__":
             # uses lat and long values to find where on the 1x1 grid they find, returns index of grid
             latPos, lonPos = findGridPosition(SHlat[i][j], SHlon[i][j])
             
-            if SHconc[i][j] >= 15:
-                icePresent = True
-            else:
-                icePresent = False                
-
-            grid[latPos][lonPos][0] += icePresent
+            grid[latPos][lonPos][0] += SHconc[i][j]
             grid[latPos][lonPos][1] += 1
 
 
@@ -191,4 +179,4 @@ if __name__ == "__main__":
             else:
                 ax.scatter(anomalyLongitude, anomalyLatitude, c = "r",edgecolors = "k", zorder = 3)
 
-    plt.savefig("test.png")
+    plt.savefig("test2.png")
