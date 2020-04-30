@@ -28,16 +28,8 @@ for i in range(len(lat)):
         else:
             icePresent = False
 
-        if grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] == 0:
-
-            count = 1
-            grid[latPos[0][0] - 1][lonPos[0][0] - 1][0] = icePresent
-            grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] = count
-        
-        else:
-
-            grid[latPos[0][0] - 1][lonPos[0][0] - 1][0] += icePresent
-            grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] += 1
+        grid[latPos[0][0] - 1][lonPos[0][0] - 1][0] += icePresent
+        grid[latPos[0][0] - 1][lonPos[0][0] - 1][1] += 1
 
 
 concProb = np.zeros((4,4))
