@@ -179,7 +179,7 @@ if __name__ == "__main__":
     
     nh_ice = nh_ice_concentration[nh_ice_mask]
     sh_ice = sh_ice_concentration[sh_ice_mask]
-    
+        
     nh_sums, _, _, _   = binned_statistic_2d(nh_lons[nh_ice_mask], nh_lats[nh_ice_mask], nh_ice, "sum",   bins = [lonbins, latbins])
     nh_counts, _, _, _ = binned_statistic_2d(nh_lons[nh_ice_mask], nh_lats[nh_ice_mask], nh_ice, "count", bins = [lonbins, latbins])
     
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     
         nh_avg = nh_sums / nh_counts
         sh_avg = sh_sums / sh_counts
-    
+            
     lats = latbins[:-1]
     lons = lonbins[:-1]
     
