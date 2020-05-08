@@ -4,6 +4,10 @@
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
+from tqdm import tqdm
+
+# Local application imports.
+from nsidc_amsr import get_geodetic_crs
 
 # Constant definitions.
 #   - Planet radii values in meters.
@@ -76,40 +80,87 @@ def lambert(point_1, point_2):
     return d
 
 
-def nearest(latitude, longitude, latitudes, longitudes):
+def nearest_model(latitudes, longitudes):
     
-    point = np.array([(latitude, longitude)])
+    if latitudes.ndim == longitudes.ndim == 1:
+        
+        latitudes, longitudes = np.meshgrid(latitudes, longitudes)
     
-    latitude_grid, longitude_grid = np.meshgrid(latitudes, longitudes)
-    
-    coordinates = np.array([latitude_grid.ravel(), longitude_grid.ravel()]).T
+    coordinates = np.array([latitudes.ravel(), longitudes.ravel()]).T
     
     neighbors = NearestNeighbors(n_neighbors = NEIGHBORS_CHECKED,
                                  metric      = haversine)
     neighbors = neighbors.fit(coordinates)
     
-    haversine_distances, indices = nbrs.kneighbors(point)
-    lambert_distances = np.empty(NEIGHBORS_CHECKED)
+    return coordinates, neighbors
 
+
+def nearest(latitude, longitude, coordinates, neighbors):
+    
+    point = np.array([(latitude, longitude)])
+    
+    haversine_distances, indices = neighbors.kneighbors(point)
+    lambert_distances = np.empty(NEIGHBORS_CHECKED)
+    
+    neighboring_coordinates = coordinates[indices[0]]
+    
+    for index, coordinate in enumerate(neighboring_coordinates):
+
+        lambert_distances[index] = lambert(point[0], coordinate)
+        
+    nearness_mask     = np.where(lambert_distances == lambert_distances.min())
+    shortest_distance = lambert_distances[nearness_mask]
+    closest_neighbor  = coordinates[indices[0][nearness_mask]]
+    
+    return shortest_distance, closest_neighbor
+
+
+def collocate(anomaly_latitudes,
+              anomaly_longitudes,
+              data_latitudes,
+              data_longitudes,
+              anomaly_resolution = 1,
+              data_resolution    = 25):
+    
+    anomalies = np.array([anomaly_latitudes, anomaly_longitudes]).T
+    size      = anomalies.shape[0]
+    
+    print("Building model...")
+    coordinates, model = nearest_model(data_latitudes, data_longitudes)
+    
+    shortest_distances = np.empty(size)
+    closest_neighbors  = np.empty(size)
+    
+    print("Beginning iteration...")
+    for index, anomaly in tqdm(enumerate(anomalies), total = size):
+        
+        shortest_distance, closest_neighbor = nearest(*anomaly, coordinates, model)
+        
+        shortest_distances[index] = shortest_distance[0]
+        closest_neighbors[index]  = closest_neighbor[0]
+    
+    return shortest_distances, closest_neighbors
+    
 
 if __name__ == "__main__":
     
-    latitudes  = np.arange(-90, 91, 1)
-    longitudes = np.arange(-180, 181, 1)
+    print("Reading files...")
+    anomaly_df = pd.read_csv(r"C:\Users\Erick Shepherd\OneDrive\Filebank\Code\modis_caliop_anomaly_analysis\anomaly_mapping\2007-01_water_worldview_anomalies.csv")
     
-    LAT, LON = np.meshgrid(latitudes, longitudes)
+    coordinates = get_geodetic_crs()
     
-    data = np.array([LAT.ravel(), LON.ravel()]).T
-
-    nbrs = NearestNeighbors(n_neighbors = NEIGHBORS_CHECKED, metric = haversine).fit(data)
+    anomaly_latitudes  = anomaly_df.latitude
+    anomaly_longitudes = anomaly_df.longitude
     
-    p1 = np.array([(0.5, 0.5)])
-    distance, index = nbrs.kneighbors(p1)
-    p2 = data[index[0]]
+    nh_latitudes  = coordinates["northern_hemisphere"]["latitudes"]
+    nh_longitudes = coordinates["northern_hemisphere"]["longitudes"]
+    sh_latitudes  = coordinates["southern_hemisphere"]["latitudes"]
+    sh_longitudes = coordinates["southern_hemisphere"]["longitudes"]
     
-    distance2 = lambert(p1[0], p2[0])
+    print("Beginning northern hemisphere collocation...")
+    r = collocate(anomaly_latitudes,
+                  anomaly_longitudes,
+                  nh_latitudes,
+                  nh_longitudes)
     
-    print("Given point:   ", tuple(p1[0]))
-    print("Closest point: ", tuple(p2[0]))
-    print("Haversine:     ", distance[0][0])
-    print("Lambert:       ", distance2)
+    shortest_distances, closest_neighbors = r
