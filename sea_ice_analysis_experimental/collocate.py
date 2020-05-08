@@ -1,6 +1,7 @@
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.haversine_distances.html
 
 # Third party imports.
+import netCDF4 as nc
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
@@ -109,18 +110,19 @@ def nearest(latitude, longitude, coordinates, neighbors):
         lambert_distances[index] = lambert(point[0], coordinate)
         
     nearness_mask     = np.where(lambert_distances == lambert_distances.min())
+    closest_index     = indices[0][nearness_mask]
+    closest_neighbor  = coordinates[closest_index]
     shortest_distance = lambert_distances[nearness_mask]
-    closest_neighbor  = coordinates[indices[0][nearness_mask]]
-    
-    return shortest_distance, closest_neighbor
+        
+    return closest_index, closest_neighbor, shortest_distance
 
 
 def collocate(anomaly_latitudes,
               anomaly_longitudes,
               data_latitudes,
               data_longitudes,
-              anomaly_resolution = 1,
-              data_resolution    = 25):
+              anomaly_resolution = 1000,
+              data_resolution    = 25000):
     
     anomalies = np.array([anomaly_latitudes, anomaly_longitudes]).T
     size      = anomalies.shape[0]
@@ -128,24 +130,37 @@ def collocate(anomaly_latitudes,
     print("Building model...")
     coordinates, model = nearest_model(data_latitudes, data_longitudes)
     
+    closest_indices    = np.empty(size).astype(np.int32)
+    closest_neighbors  = np.empty((size, 2))
     shortest_distances = np.empty(size)
-    closest_neighbors  = np.empty(size)
     
     print("Beginning iteration...")
+    
     for index, anomaly in tqdm(enumerate(anomalies), total = size):
         
-        shortest_distance, closest_neighbor = nearest(*anomaly, coordinates, model)
-        
-        shortest_distances[index] = shortest_distance[0]
+        closest_index, closest_neighbor, shortest_distance = nearest(*anomaly, coordinates, model)
+
+        closest_indices[index]    = closest_index[0]
         closest_neighbors[index]  = closest_neighbor[0]
+        shortest_distances[index] = shortest_distance[0]
     
-    return shortest_distances, closest_neighbors
+    return closest_indices, closest_neighbors, shortest_distances
     
 
 if __name__ == "__main__":
     
     print("Reading files...")
+    
     anomaly_df = pd.read_csv(r"C:\Users\Erick Shepherd\OneDrive\Filebank\Code\modis_caliop_anomaly_analysis\anomaly_mapping\2007-01_water_worldview_anomalies.csv")
+    anomaly_df["sea_ice_concentration"] = pd.Series(dtype = np.uint8)
+    
+    dataset = nc.Dataset("AMSR_E_L3_SeaIce12km_V15_20070101.hdf")
+    
+    nh_shape = (896, 608)  # "nh" represents "northern hemisphere".
+    sh_shape = (664, 632)  # "sh" represents "southern hemisphere".
+    
+    nh_ice_concentration = dataset["SI_12km_NH_ICECON_ASC"][:].data.astype(np.float).ravel()
+    sh_ice_concentration = dataset["SI_12km_SH_ICECON_ASC"][:].data.astype(np.float).ravel()
     
     coordinates = get_geodetic_crs()
     
@@ -158,9 +173,42 @@ if __name__ == "__main__":
     sh_longitudes = coordinates["southern_hemisphere"]["longitudes"]
     
     print("Beginning northern hemisphere collocation...")
-    r = collocate(anomaly_latitudes,
-                  anomaly_longitudes,
-                  nh_latitudes,
-                  nh_longitudes)
+    nh_r = collocate(anomaly_latitudes,
+                     anomaly_longitudes,
+                     nh_latitudes,
+                     nh_longitudes)
     
-    shortest_distances, closest_neighbors = r
+    nh_closest_indices, nh_closest_neighbors, nh_shortest_distances = nh_r
+    
+    nh_ice_mask       = (0 <= nh_ice_concentration) & (nh_ice_concentration <= 100)
+    nh_ice_mask       = nh_ice_mask[nh_closest_indices]
+    nh_distance_mask  = nh_shortest_distances <= (25000 / 2) - (1000 / 2)
+    nh_mask           = nh_ice_mask & nh_distance_mask
+    nh_masked_indices = nh_closest_indices[nh_mask]
+    nh_sea_ice        = nh_ice_concentration[nh_masked_indices]
+    
+    anomaly_df.loc[nh_mask, "sea_ice_concentration"] = nh_sea_ice
+    
+    print("Beginning southern hemisphere collocation...")
+    sh_r = collocate(anomaly_latitudes,
+                     anomaly_longitudes,
+                     sh_latitudes,
+                     sh_longitudes)
+    
+    sh_closest_indices, sh_closest_neighbors, sh_shortest_distances = sh_r
+    
+    sh_ice_mask       = (0 <= sh_ice_concentration) & (sh_ice_concentration <= 100)
+    sh_ice_mask       = sh_ice_mask[sh_closest_indices]
+    sh_distance_mask  = sh_shortest_distances <= (25000 / 2) - (1000 / 2)
+    sh_mask           = sh_ice_mask & sh_distance_mask
+    sh_masked_indices = sh_closest_indices[sh_mask]
+    sh_sea_ice        = sh_ice_concentration[sh_masked_indices]
+    
+    anomaly_df.loc[sh_mask, "sea_ice_concentration"] = sh_sea_ice
+    
+    print("Saving results...")
+    anomaly_df.to_csv("2007-01_water_worldview_anomalies_with_sea_ice.csv")
+    print("Task completed successfully.")
+
+    # TODO: PICKLE MODELS
+    

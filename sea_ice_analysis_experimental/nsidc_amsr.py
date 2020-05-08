@@ -104,10 +104,12 @@ if __name__ == "__main__":
     
     nh_water_mask = np.where(nh_ice_concentration == 0)
     nh_ice_mask   = np.where((1 <= nh_ice_concentration) & (nh_ice_concentration <= 100))
+    nh_nan_mask   = np.where(nh_ice_concentration == 110)
     nh_land_mask  = np.where(nh_ice_concentration == 120)
     
     sh_water_mask = np.where(sh_ice_concentration == 0)
     sh_ice_mask   = np.where((1 <= sh_ice_concentration) & (sh_ice_concentration <= 100))
+    sh_nan_mask   = np.where(sh_ice_concentration == 110)
     sh_land_mask  = np.where(sh_ice_concentration == 120)
     
     nh_water = nh_ice_concentration[nh_water_mask]
