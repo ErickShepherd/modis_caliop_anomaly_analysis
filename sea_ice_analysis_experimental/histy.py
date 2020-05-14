@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv("2007-01_water_worldview_anomalies_with_sea_ice.csv")
+df = pd.read_csv("2007_over-water_worldview_anomalies_with_sea_ice.csv")
 
 ice = df["sea_ice_concentration"]
 ice.loc[ice.isnull()] = -20
@@ -32,9 +32,9 @@ for a in p[-1]:
 
     a.set_height(a.get_height() / ice.size)
     
-plt.ylim(0, 0.6)
+plt.ylim(0, 1)
 
-plt.yticks(np.arange(0, 0.61, 0.1))
+plt.yticks(np.arange(0, 1.01, 0.1))
 ylocs, ylabels = plt.yticks()
 plt.yticks(ylocs, [f"{int(n * 100)}" for n in ylocs])
 

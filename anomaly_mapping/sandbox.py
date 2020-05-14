@@ -80,9 +80,9 @@ def bytes_to_string(data):
     
 if __name__ == "__main__":
     
-    df = pd.read_csv("2007-01_water_anomalies.csv")
+    df = pd.read_csv("2007_over-water_anomalies.csv")
     
-    df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    df["iso_timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     df["min_lon"]   = df["longitude"] - 0.1
     df["max_lon"]   = df["longitude"] + 0.1
     df["min_lat"]   = df["latitude"] - 0.1
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     }
     
     df.rename(columns = columns, inplace = True)
-    df.to_csv("2007-01_water_worldview_anomalies.csv", index = False)
+    df.to_csv("2007_water_worldview_anomalies.csv", index = False)
     
 #    for index, row in tqdm(df.iterrows(), total = df.index.size):
 #        
