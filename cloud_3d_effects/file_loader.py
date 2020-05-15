@@ -144,7 +144,16 @@ def _preprocess_data(filenames, datasets):
 
             data["MYD06_Cloud_Optical_Thickness"] = data["MYD06_Cloud_Optical_Thickness"].T[0]
             data["MYD06_Cloud_Optical_Thickness"][data["MYD06_Cloud_Optical_Thickness"] == -9999.99] = np.nan
-
+            
+            try:
+                
+                data["MYD06_Cloud_Top_Height_1km"][data["MYD06_Cloud_Top_Height_1km"] == -9999.99] = np.nan
+                data["MYD06_Cloud_Top_Height_1km"] = data["MYD06_Cloud_Top_Height_1km"].T[0]
+                
+            except Exception as e:
+                
+                print(e)
+            
             #data["Column_Optical_Depth_Cloud_532"] = data["Column_Optical_Depth_Cloud_532"].T[0]
 
             yield data

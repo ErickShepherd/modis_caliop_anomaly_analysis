@@ -172,16 +172,16 @@ if __name__ == "__main__":
     print("Reading files...")
     
     df = pd.read_csv(r"2007_over-water_worldview_anomalies.csv")
-    df["sea_ice_concentration"] = pd.Series(dtype = np.uint8)
+    sea_ice_concentration_series = pd.Series(np.empty(df.index.size), dtype = np.int16)
+    sea_ice_concentration_series[:] = np.nan
+    #df["sea_ice_concentration"] = pd.Series(dtype = np.uint8)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     
-    #path = "/umbc/xfs1/cybertrn/cybertraining2020/team2/research/SeaIce/BothHemispheres/data"
-    path = r"C:\Users\Erick Shepherd\OneDrive\Filebank\Code\modis_caliop_anomaly_analysis\sea_ice_analysis_experimental"
+    path = "/umbc/xfs1/cybertrn/cybertraining2020/team2/research/SeaIce/BothHemispheres/data"
+    #path = r"C:\Users\Erick Shepherd\OneDrive\Filebank\Code\modis_caliop_anomaly_analysis\sea_ice_analysis_experimental"
     
     data_files = [f for f in os.listdir(path) if re.match(AMSR_REGEX, f)]
-    
-    dfs = []
-    
+        
     for filename in tqdm(data_files, total = len(data_files)):
         
         #print(filename)
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         # Making copies makes the code a dozen times slower.
         # Consider assembling the array of results separately and
         # adding it to the dataframe after the fact.
-        anomaly_df = df[dt_mask].copy()
+        #anomaly_df = df[dt_mask]#.copy()
         
         dataset = nc.Dataset(os.path.join(path, filename))
 
@@ -211,8 +211,8 @@ if __name__ == "__main__":
 
         coordinates = get_geodetic_crs()
 
-        anomaly_latitudes  = anomaly_df.latitude.values
-        anomaly_longitudes = anomaly_df.longitude.values
+        anomaly_latitudes  = df[dt_mask].latitude.values
+        anomaly_longitudes = df[dt_mask].longitude.values
         
         nh_latitudes  = coordinates["northern_hemisphere"]["latitudes"]
         nh_longitudes = coordinates["northern_hemisphere"]["longitudes"]
@@ -235,7 +235,7 @@ if __name__ == "__main__":
         nh_masked_indices = nh_closest_indices[nh_mask]
         nh_sea_ice        = nh_ice_concentration[nh_masked_indices]
         
-        anomaly_df.loc[nh_mask, "sea_ice_concentration"] = nh_sea_ice
+        sea_ice_concentration_series[np.where(dt_mask)[0][nh_mask]] = nh_sea_ice
 
         #print("Beginning southern hemisphere collocation...")
         sh_r = collocate(anomaly_latitudes,
@@ -252,22 +252,25 @@ if __name__ == "__main__":
         sh_mask           = sh_ice_mask & sh_distance_mask
         sh_masked_indices = sh_closest_indices[sh_mask]
         sh_sea_ice        = sh_ice_concentration[sh_masked_indices]
-
-        anomaly_df.loc[sh_mask, "sea_ice_concentration"] = sh_sea_ice
         
-        anomaly_df["sea_ice_concentration"]
+        sea_ice_concentration_series[np.where(dt_mask)[0][sh_mask]] = sh_sea_ice
+        #anomaly_df.loc[sh_mask, "sea_ice_concentration"] = sh_sea_ice
         
-        dfs.append(anomaly_df)
+        #anomaly_df["sea_ice_concentration"]
+        
+        #dfs.append(anomaly_df)
         
         #print(anomaly_df.loc[sh_mask, "sea_ice_concentration"])
         #input()
     
-    anomaly_df = pd.concat(dfs)
-    anomaly_df.sort_values("timestamp", inplace = True)
-    anomaly_df.reset_index(inplace = True, drop = True)
+    #anomaly_df = pd.concat(dfs)
+    #anomaly_df.sort_values("timestamp", inplace = True)
+    #anomaly_df.reset_index(inplace = True, drop = True)
+    
+    df["sea_ice_concentration"] = sea_ice_concentration_series
     
     print("Saving results...")
-    anomaly_df.to_csv("2007_over-water_worldview_anomalies_with_sea_ice.csv", index = False)
+    df.to_csv("2007_over-water_worldview_anomalies_with_sea_ice.csv", index = False)
     print("Task completed successfully.")
 
     # TODO: PICKLE MODELS
