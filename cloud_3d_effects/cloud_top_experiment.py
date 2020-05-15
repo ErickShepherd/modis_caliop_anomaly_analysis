@@ -177,5 +177,5 @@ if __name__ == "__main__":
     anomalies["cloud_top_slope"]     = cloud_top_slope_series
     anomalies["cloud_top_intercept"] = cloud_top_intercept_series
     
-    anomalies.to_csv("2007_over-water_worldview_anomalies_with_sea_ice_and_slopes.csv", index = False)
+    anomalies.to_csv("2007_over-water_worldview_water_cloud_anomalies_with_sea_ice_and_slopes.csv", index = False)
                 

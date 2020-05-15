@@ -99,7 +99,7 @@ if __name__ == "__main__":
     filenames = get_filenames(DIRECTORIES, START_DATE, END_DATE)
     datasets  = file_loader._preprocess_data(filenames, datasets)
     
-    nc_outfile = nc.Dataset("2007_ice_histograms.nc", "w", format = "NETCDF4_CLASSIC")
+    nc_outfile = nc.Dataset("2007_water_histograms.nc", "w", format = "NETCDF4_CLASSIC")
     
 #    x = next(datasets)
 #    print(x)
@@ -176,10 +176,10 @@ if __name__ == "__main__":
             sza  = np.squeeze(sza)
 
             # Masks water clouds.
-            #water_clouds = ((vfm.T[0] == 2) & (vfm.T[2] == 2)).T
+            water_clouds = ((vfm.T[0] == 2) & (vfm.T[2] == 2)).T
             
             # TEMP: Masks ice clouds.
-            water_clouds = ((vfm.T[0] == 2) & ((vfm.T[2] == 1) | (vfm.T[2] == 3))).T
+            #water_clouds = ((vfm.T[0] == 2) & ((vfm.T[2] == 1) | (vfm.T[2] == 3))).T
 
             # Masks single-layer water clouds.
             single_layer_water_clouds = water_clouds[:, 0] & (slay == 1)
@@ -247,7 +247,7 @@ if __name__ == "__main__":
         transparent_2d_histogram + opaque_2d_histogram
     
     anomalies = pd.concat(anomalies)
-    anomalies.to_csv("Anomalies.csv", index = False)
+    anomalies.to_csv("Water_Anomalies.csv", index = False)
     
     nc_outfile.close()
     

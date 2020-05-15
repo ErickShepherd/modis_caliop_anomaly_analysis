@@ -1,6 +1,6 @@
 # Standard library imports.
+import datetime
 import re
-from datetime import datetime
 from os import walk
 from os.path import join
 
@@ -59,8 +59,8 @@ def _regex_match_to_datetime(m):
     if m is not None:
     
         timestamp_string = m.groupdict()["timestamp"]
-        timestamp        = datetime.strptime(timestamp_string,
-                                             TIMESTAMP_FORMAT)
+        timestamp        = datetime.datetime.strptime(timestamp_string,
+                                                      TIMESTAMP_FORMAT)
         
         return timestamp
 
@@ -88,6 +88,6 @@ def get_filenames(directories, start_date = None, end_date = None):
         
     if end_date is not None:
         
-        filenames = filenames[filenames.index <= end_date]
+        filenames = filenames[filenames.index < end_date + datetime.timedelta(days = 1)]
         
     return filenames

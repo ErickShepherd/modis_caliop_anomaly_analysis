@@ -4,9 +4,9 @@ import numpy as np
 
 if __name__ == "__main__":
 
-    csv_filename   =  "Anomalies.csv"
-    ncin_filename  = "2007_ice_histograms.nc"
-    ncout_filename = "2007_MYD_CALIPSO_ice_cloud_collocation_discrepancies.nc"
+    csv_filename   = "Water_Anomalies.csv"
+    ncin_filename  = "2007_water_histograms.nc"
+    ncout_filename = "2007_MYD_CALIPSO_water_cloud_collocation_discrepancies.nc"
 
     df   = pd.read_csv(csv_filename)
     ncin = nc.Dataset(ncin_filename)
@@ -46,6 +46,7 @@ if __name__ == "__main__":
     
     ncout["anomalies"].createDimension("time", df.timestamp.size)
     
+    # np.unicode_ type generates incorrect timestamp? Use np.datetime64?
     ncout["anomalies"].createVariable("calipso_timestamp",    np.unicode_, ("time",))
     ncout["anomalies"].createVariable("calipso_latitude",     np.float64,  ("time",))
     ncout["anomalies"].createVariable("calipso_longitude",    np.float64,  ("time",))
