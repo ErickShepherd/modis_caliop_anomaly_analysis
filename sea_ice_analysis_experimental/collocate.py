@@ -142,7 +142,7 @@ def collocate(anomaly_latitudes,
               data_longitudes,
               hemisphere,
               anomaly_resolution = 1000,
-              data_resolution    = 25000):
+              data_resolution    = 12500):
     
     anomalies = np.array([anomaly_latitudes, anomaly_longitudes]).T
     size      = anomalies.shape[0]

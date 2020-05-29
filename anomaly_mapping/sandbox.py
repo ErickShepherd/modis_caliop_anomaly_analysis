@@ -17,6 +17,8 @@ from tqdm import tqdm
 # https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2007-01-01T00:00:00Z&BBOX=-77.36858054226036,-32.2674641148307,-77.30478468899082,-32.20366826156117&CRS=EPSG:4326&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor,Coastlines&WRAP=day,x&FORMAT=image/jpeg&WIDTH=1&HEIGHT=1&ts=1587656674112
 # https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2020-04-23T00:00:00Z&BBOX=38.03065191387561,-20.881130382775126,38.665819377990445,-20.404754784689004&CRS=EPSG:4326&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor,Coastlines&WRAP=day,x&FORMAT=image/jpeg&WIDTH=1734&HEIGHT=2313&ts=1587657363454
 
+# TODO: Timestamp must be in ISO format!!!
+
 def get_image(row):
     
     index, row = row
