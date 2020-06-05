@@ -206,8 +206,8 @@ if __name__ == "__main__":
         nh_shape = (896, 608)  # "nh" represents "northern hemisphere".
         sh_shape = (664, 632)  # "sh" represents "southern hemisphere".
 
-        nh_ice_concentration = dataset["SI_12km_NH_ICECON_ASC"][:].data.astype(np.float).ravel()
-        sh_ice_concentration = dataset["SI_12km_SH_ICECON_ASC"][:].data.astype(np.float).ravel()
+        nh_ice_concentration = dataset["SI_12km_NH_ICECON_DAY"][:].data.astype(np.float).ravel()
+        sh_ice_concentration = dataset["SI_12km_SH_ICECON_DAY"][:].data.astype(np.float).ravel()
 
         coordinates = get_geodetic_crs()
 

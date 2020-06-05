@@ -35,6 +35,14 @@ FEATURE_CLASS_KEY   = "Feature_Classification_Flags"
 LOOKUP_RANGE        = 5
 
 
+def get_clouds(full_layer_type):
+    
+    # Masks the first layer of clouds.
+    clouds = (full_layer_type.T[0] == 2).T[:, 0]
+    
+    return clouds
+
+
 def truncate_datasets(datasets):
     
     for dataset in datasets:
@@ -46,17 +54,12 @@ def truncate_datasets(datasets):
         latitude               = dataset[LATITUDE_KEY]
         longitude              = dataset[LONGITUDE_KEY]
         modis_cloud_top_height = dataset[MODIS_CLOUD_TOP_KEY]
-        cal_cloud_top_height   = dataset[CAL_LAYER_TOP_KEY]
+        cal_cloud_top_height   = dataset[CAL_LAYER_TOP_KEY][:, 0]
         full_layer_type        = dataset[FEATURE_CLASS_KEY]
-
-        layer_type = np.zeros(18630)
-        # convert CAL layer top height data to CALIPSO cloud top height data
-        for i in range(len(full_layer_type)):
-            #for j in range(len(full_layer_type[i])):
         
-            # call on function from other script to identify layer type
-            layer_type[i] = full_layer_type[i][0][0]
-
+        cloud_mask = get_clouds(full_layer_type)
+        cal_cloud_top_height[~cloud_mask] = np.nan
+        
         try:
         
             truncated_dataset = pd.DataFrame({
@@ -65,7 +68,6 @@ def truncate_datasets(datasets):
                 "longitude"              : longitude,
                 "modis_cloud_top_height" : modis_cloud_top_height,
                 "cal_cloud_top_height"   : cal_cloud_top_height,
-                "layer_type"             : layer_type
             })
             
             yield truncated_dataset
@@ -167,15 +169,6 @@ if __name__ == "__main__":
 
                 modis_cloud_top_height = surrounding_data["modis_cloud_top_height"].values
                 cal_cloud_top_height   = surrounding_data["cal_cloud_top_height"].values
-                layer_type             = surrounding_data["layer_type"]
-
-                # convert CAL layer top height data to CALIPSO cloud top height data
-                for i in range(len(layer_type)):
-
-                    # call on function from other script to identify layer type
-                    vfm = classify_vfm(layer_type[i])
-                    if vfm[0][0] != 2:
-                        cal_cloud_top_height[i] = np.nan
 
                 nan_mask = np.isnan(distances) | np.isnan(modis_cloud_top_height) | np.isnan(cal_cloud_top_height)                
                 
