@@ -15,6 +15,7 @@ import configuration
 import file_loader
 from collocate import lambert
 from file_finder import get_filenames
+from vertical_feature_mask import classify_vfm
 
 # TODO: Parallelize with my imap function.
 
@@ -24,7 +25,7 @@ START_DATE  = datetime.datetime(2007, 1, 1)
 END_DATE    = datetime.datetime(2007, 12, 31)
 
 # Constant definitions.
-ANOMALY_PATH        = "2007_over-water_worldview_anomalies_with_sea_ice.csv"
+ANOMALY_PATH        = "../../2007_over-water_water_cloud_with_sea_ice_ascending.csv"
 MODIS_CLOUD_TOP_KEY = "MYD06_Cloud_Top_Height_1km"
 CAL_LAYER_TOP_KEY   = "Layer_Top_Altitude"
 LATITUDE_KEY        = "CALIPSO_Lat1km"
@@ -37,7 +38,7 @@ LOOKUP_RANGE        = 5
 def truncate_datasets(datasets):
     
     for dataset in datasets:
-        
+        print("hi")
         time = np.squeeze(dataset[TIME_KEY])
         time = np.array([datetime.timedelta(seconds = t) for t in time])
         time = datetime.datetime(1993, 1, 1) + time
@@ -46,7 +47,15 @@ def truncate_datasets(datasets):
         longitude              = dataset[LONGITUDE_KEY]
         modis_cloud_top_height = dataset[MODIS_CLOUD_TOP_KEY]
         cal_cloud_top_height   = dataset[CAL_LAYER_TOP_KEY]
-        layer_type             = dataset[FEATURE_CLASS_KEY]
+        full_layer_type        = dataset[FEATURE_CLASS_KEY]
+
+        layer_type = np.zeros(18630)
+        # convert CAL layer top height data to CALIPSO cloud top height data
+        for i in range(len(full_layer_type)):
+            #for j in range(len(full_layer_type[i])):
+        
+            # call on function from other script to identify layer type
+            layer_type[i] = full_layer_type[i][0][0]
 
         try:
         
@@ -71,7 +80,8 @@ def truncate_datasets(datasets):
 
 
 if __name__ == "__main__":
-    
+    print("entered")
+
     datasets = {
         "collocation_data" : [
             "Collocation_Flag",
@@ -94,9 +104,10 @@ if __name__ == "__main__":
             "Profile_Time",
             "IGBP_Surface_Type",
             "Day_Night_Flag",
+            "Layer_Top_Altitude"
         ],
     }
-    
+    print("yo")
     # Naive filename filtering.
     filenames = get_filenames(DIRECTORIES, START_DATE, END_DATE)
     datasets  = file_loader._preprocess_data(filenames, datasets)
@@ -116,13 +127,13 @@ if __name__ == "__main__":
     longitude_envelope_series[:]     = np.nan
     distance_series[:]               = np.nan
     modis_cloud_top_height_series[:] = np.nan
-    cal_cloud_top_slope_series[:]    = np.nan
+    cal_cloud_top_height_series[:]    = np.nan
     
     previous_dataset = pd.DataFrame(None)
     current_dataset  = next(datasets)
     next_dataset     = next(datasets)
-    
-    for i, anomaly in tqdm(anomalies.iterrows(), total = anomalies.index.size):
+
+    for i in range(len(anomalies)):
         
         anomaly_in_file = False
         
@@ -132,7 +143,7 @@ if __name__ == "__main__":
                                  current_dataset,
                                  next_dataset]).reset_index(drop = True)
             
-            anomaly_time = anomaly.timestamp
+            anomaly_time = anomalies[i].timestamp
             dataset_time = current_dataset.time
             
             anomaly_index   = np.where(dataset_time.isin([anomaly_time]))[0]
@@ -160,9 +171,9 @@ if __name__ == "__main__":
 
                 # convert CAL layer top height data to CALIPSO cloud top height data
                 for i in range(len(layer_type)):
-                    
+
                     # call on function from other script to identify layer type
-                    vfm = vertical_feature_mask.classify_vfm(layer_type[i])
+                    vfm = classify_vfm(layer_type[i])
                     if vfm[0][0] != 2:
                         cal_cloud_top_height[i] = np.nan
 
@@ -186,4 +197,4 @@ if __name__ == "__main__":
     anomalies["modis_cloud_top_height"] = modis_cloud_top_height_series
     anomalies["cal_cloud_top_height"]   = cal_cloud_top_height_series
     
-    anomalies.to_csv("2007_over-water_worldview_water_cloud_anomalies_with_sea_ice_and_slopes.csv", index = False)
+    anomalies.to_csv("2007_over-water_water_cloud_anomalies_with_sea_ice_and_slopes.csv", index = False)
